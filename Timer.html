@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Часова шкала тесту</title>
+  <style>
+    #scaleBar {
+      width: 80%;
+      margin: 20px auto 10px;
+      height: 30px;
+      position: relative;
+    }
+    .tick {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      background: #333;
+    }
+    .tick.long {
+      height: 15px;
+    }
+    .tick.short {
+      height: 8px;
+    }
+    .tick-label {
+      position: absolute;
+      top: 18px;
+      font-size: 12px;
+      transform: translateX(-50%);
+    }
+    #progressBar {
+      width: 80%;
+      height: 20px;
+      background-color: red;
+      border: 2px solid #555;
+      border-radius: 10px;
+      margin: 10px auto 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    #progress {
+      height: 100%;
+      width: 100%;
+      background-color: green;
+      transition: width 1s linear, background-color 0.5s;
+    }
+    #warning {
+      color: red;
+      font-weight: bold;
+      display: none;
+      text-align: center;
+      animation: blink 1s infinite;
+    }
+    #timeoutMessage {
+      display: none;
+      text-align: center;
+      font-size: 20px;
+      margin-top: 40px;
+      color: #800;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+  </style>
+  <script src="time.js"></script>
+</head>
+<body>
+  <div id="scaleBar"></div>
+  <div id="progressBar"><div id="progress"></div></div>
+  <div id="warning">⏰ Час майже вичерпано!</div>
+  <div id="timeoutMessage">⛔ Час вичерпано! Надішліть форму, якщо ще не зробили це.</div>
+
+  <script>
+    const totalMinutes = typeof testMinutes !== 'undefined' ? testMinutes : 30;
+    const totalSeconds = totalMinutes * 60;
+    let remainingSeconds = totalSeconds;
+
+    function createScaleBar() {
+      const scale = document.getElementById("scaleBar");
+      for (let m = 0; m <= totalMinutes; m++) {
+        const tick = document.createElement("div");
+        const tickType = m % 5 === 0 ? "long" : "short";
+        tick.className = "tick " + tickType;
+        tick.style.left = (m / totalMinutes) * 100 + "%";
+        scale.appendChild(tick);
+
+        if (m % 5 === 0) {
+          const label = document.createElement("div");
+          label.className = "tick-label";
+          label.style.left = (m / totalMinutes) * 100 + "%";
+          label.textContent = m + ":00";
+          scale.appendChild(label);
+        }
+      }
+    }
+
+    function updateTimer() {
+      if (remainingSeconds <= 0) {
+        clearInterval(timerInterval);
+        document.body.innerHTML = ""; // очищає все
+        const msg = document.getElementById("timeoutMessage");
+        msg.style.display = "block";
+        document.body.appendChild(msg);
+        return;
+      }
+
+      const percentRemaining = (remainingSeconds / totalSeconds) * 100;
+      document.getElementById("progress").style.width = percentRemaining + "%";
+
+      if (remainingSeconds <= 120) {
+        document.getElementById("warning").style.display = "block";
+        document.getElementById("progress").style.backgroundColor = "red";
+      } else if (remainingSeconds <= 300) {
+        document.getElementById("progress").style.backgroundColor = "orange";
+      }
+
+      remainingSeconds--;
+    }
+
+    createScaleBar();
+    const timerInterval = setInterval(updateTimer, 1000);
+  </script>
+</body>
+</html>
