@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Test GPT</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .time-info {
+        margin-top: 10px;
+        font-size: 18px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Інформація про тест</h1>
+    <div class="time-info">Завантаження...</div>
+
+    <script>
+      const apiUrl = "https://script.google.com/macros/s/AKfycbw2n6IP1qKVWsM1AnwjYYzykRiNAzFe2Y1b71TdqN6I0_67iln4LuCwKjptP1DCXXfN8Q/exec";
+
+      fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+          document.querySelector('.time-info').innerHTML = `
+            ⏰ <strong>Тест відкритий до:</strong> ${data["Відкритий до"]} <br>
+            🕓 <strong>Здати до:</strong> ${data["Здати до"]} <br>
+            🔗 <strong><a href="${data["Посилання на тест"]}" target="_blank">Перейти до тесту</a></strong> <br>
+            ⌛ <strong>Час на виконання:</strong> ${data["Час (хв)"]} хв
+          `;
+        })
+        .catch(err => {
+          document.querySelector('.time-info').innerHTML = '❌ Помилка завантаження даних';
+          console.error(err);
+        });
+    </script>
+  </body>
+</html>
