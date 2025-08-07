@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Збереження Часу та Посилання</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background-color: #f0f0f0;
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    select, input, button {
+      font-size: 16px;
+      padding: 10px;
+      margin-top: 5px;
+      width: 300px;
+    }
+    .btn {
+      margin-top: 20px;
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Введення інформації</h2>
+
+  <!-- Поле для вибору часу -->
+  <label for="timeSelect">Час (від 5 до 60 хв, крок 5):</label>
+  <select id="timeSelect">
+    <!-- Автоматично генерується через JS -->
+  </select>
+  <button class="btn" onclick="saveToFile('Time.txt', document.getElementById('timeSelect').value)">💾 Зберегти Час</button>
+
+  <!-- Поле для введення посилання -->
+  <label for="linkInput">Посилання:</label>
+  <input type="text" id="linkInput" placeholder="https://...">
+  <button class="btn" onclick="saveToFile('Link.txt', document.getElementById('linkInput').value)">💾 Зберегти Посилання</button>
+
+  <script>
+    // Генерація значень часу від 5 до 60 з кроком 5
+    const select = document.getElementById('timeSelect');
+    for (let i = 5; i <= 60; i += 5) {
+      const option = document.createElement('option');
+      option.value = i + ' хвилин';
+      option.textContent = i + ' хвилин';
+      select.appendChild(option);
+    }
+
+    // Збереження тексту у файл
+    function saveToFile(filename, content) {
+      const blob = new Blob([content], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+  </script>
+
+</body>
+</html>
