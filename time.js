@@ -1,4 +1,5 @@
 // Встановлюємо час тесту у хвилинах
-const testMinutes = 1;
+const testMinutes = 5;
+
 
 
