@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Таймер</title>
+  <script src="time.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 32px;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #timer {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Час, що залишився:</h1>
+  <div id="timer">Завантаження...</div>
+
+  <script>
+    // Перевірка, чи існує timeInMinutes з time.js
+    if (typeof timeInMinutes !== 'undefined') {
+      let timeLeft = timeInMinutes * 60; // Перетворення хвилин у секунди
+
+      function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }
+
+      function updateTimer() {
+        const timerElement = document.getElementById('timer');
+        if (timeLeft <= 0) {
+          timerElement.textContent = "Час вийшов!";
+          clearInterval(timerInterval);
+        } else {
+          timerElement.textContent = formatTime(timeLeft);
+          timeLeft--;
+        }
+      }
+
+      updateTimer(); // Перший запуск
+      const timerInterval = setInterval(updateTimer, 1000); // Щосекунди
+    } else {
+      document.getElementById('timer').textContent = "Помилка: час не вказано!";
+    }
+  </script>
+</body>
+</html>
