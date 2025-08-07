@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Тест з годинником</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      text-align: center;
+      background: url("LPK.jpg") no-repeat center center fixed;
+      background-size: cover;
+    }
+    .overlay {
+      background: rgba(250, 248, 244, 0.92);
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .subject-img {
+      width: 140px;
+      margin-bottom: 10px;
+    }
+    #clock {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+      background: #fff;
+      border: 2px solid #555;
+      border-radius: 10px;
+      display: inline-block;
+      padding: 8px 16px;
+      min-width: 120px;
+    }
+    .time-info {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    #scaleBar {
+      width: 80%;
+      margin: 0 auto 10px;
+      height: 30px;
+      position: relative;
+    }
+    .tick {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      background: #333;
+    }
+    .tick.long { height: 15px; }
+    .tick.short { height: 8px; }
+    .tick-label {
+      position: absolute;
+      top: 18px;
+      font-size: 12px;
+      transform: translateX(-50%);
+    }
+    #progressBar {
+      width: 80%;
+      height: 20px;
+      background-color: red;
+      border: 2px solid #555;
+      border-radius: 10px;
+      margin: 10px auto 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    #progress {
+      height: 100%;
+      width: 100%;
+      background-color: green;
+      transition: width 1s linear, background-color 0.5s;
+    }
+    #warning {
+      color: red;
+      font-weight: bold;
+      display: none;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    iframe {
+      width: 90%;
+      max-width: 600px;
+      height: 500px;
+      border: none;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <h2>«Львівський поліграфічний фаховий коледж УАД»</h2>
+    <img src="Logo.png" alt="Фото предмету" class="subject-img">
+    <div class="time-info">
+      🗓️ <strong>Тест відкритий до:</strong> 19.07.2025, 18:54<br>
+      ⏰ <strong>Прохання здати тест до:</strong> 19.07.2025, 18:00<br>
+      🔒 <strong>Час початку тесту:</strong> <span id="startTime"></span>
+    </div>
+
+    <div id="clock">00:00:00</div>
+    <div id="scaleBar"></div>
+    <div id="progressBar"><div id="progress"></div></div>
+    <div id="warning">⏰ Час майже вичерпано!</div>
+
+    <iframe id="testFrame" src=""></iframe>
+  </div>
+
+  <script>
+    function showStartTime() {
+      const now = new Date();
+      const formatted = now.toLocaleString('uk-UA', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      document.getElementById("startTime").innerText = formatted;
+    }
+    showStartTime();
+
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('uk-UA', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+      document.getElementById("clock").textContent = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    let totalMinutes = 30;
+    let totalSeconds = totalMinutes * 60;
+    let remainingSeconds = totalSeconds;
+
+    function updateTimer() {
+      if (remainingSeconds <= 0) {
+        clearInterval(timerInterval);
+        alert("⛔ Час вичерпано! Надішліть форму, якщо ще не зробили це.");
+        document.getElementById("testFrame").style.display = "none";
+        document.getElementById("progress").style.width = "0%";
+        return;
+      }
+      const percentRemaining = (remainingSeconds / totalSeconds) * 100;
+      document.getElementById("progress").style.width = percentRemaining + "%";
+
+      if (remainingSeconds <= 120) {
+        document.getElementById("warning").style.display = "block";
+        document.getElementById("progress").style.backgroundColor = "red";
+      } else if (remainingSeconds <= 300) {
+        document.getElementById("progress").style.backgroundColor = "orange";
+      }
+
+      remainingSeconds--;
+    }
+
+    function createScaleBar() {
+      const scale = document.getElementById("scaleBar");
+      scale.innerHTML = '';
+      for (let m = 0; m <= totalMinutes; m++) {
+        const tick = document.createElement("div");
+        const tickType = m % 5 === 0 ? "long" : "short";
+        tick.className = `tick ${tickType}`;
+        tick.style.left = `${(m / totalMinutes) * 100}%`;
+        scale.appendChild(tick);
+
+        if (m % 5 === 0) {
+          const label = document.createElement("div");
+          label.className = "tick-label";
+          label.style.left = `${(m / totalMinutes) * 100}%`;
+          label.textContent = `${m}:00`;
+          scale.appendChild(label);
+        }
+      }
+    }
+
+    async function initFromFiles() {
+      try {
+        const [linkRes, timeRes] = await Promise.all([
+          fetch("link.txt"),
+          fetch("Time.txt")
+        ]);
+        const testUrl = await linkRes.text();
+        const testMinutes = parseInt(await timeRes.text());
+
+        if (!isNaN(testMinutes) && testMinutes >= 1 && testMinutes <= 60) {
+          totalMinutes = testMinutes;
+          totalSeconds = totalMinutes * 60;
+          remainingSeconds = totalSeconds;
+          createScaleBar();
+          setInterval(updateTimer, 1000);
+        }
+
+        document.getElementById("testFrame").src = testUrl.trim();
+      } catch (err) {
+        alert("Помилка завантаження 'link.txt' або 'Time.txt'");
+        console.error(err);
+      }
+    }
+
+    initFromFiles();
+  </script>
+</body>
+</html>
