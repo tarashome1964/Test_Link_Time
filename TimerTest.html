@@ -2,35 +2,52 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>Активний тест</title>
+  <title>Запуск тесту</title>
   <style>
-    body { font-family: sans-serif; background: #f0f0f0; padding: 20px; }
-    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; }
-    h2 { margin-top: 0; }
-    .info { margin-bottom: 10px; }
-    .link { margin-top: 20px; }
+    body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
+    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 800px; margin: auto; }
+    .timer { font-size: 1.5em; color: #d9534f; margin-bottom: 20px; }
+    iframe { width: 100%; height: 600px; border: none; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🧪 Активний тест: АСТРОНОМІЯ 1</h2>
-
-    <div class="info">📅 Час початку тесту: <span id="startTime"></span></div>
-    <div class="info">⏳ Тривалість: 20 хв</div>
-    <div class="info">📌 Статус: <strong>Запущено</strong></div>
-
-    <div class="link">
-      🔗 <a href="https://docs.google.com/forms/d/e/your-form-id/viewform" target="_blank">Перейти до форми тесту</a>
-    </div>
+    <h2 id="testTitle">Завантаження...</h2>
+    <div>⏳ Тривалість: <span id="duration">--</span> хв</div>
+    <div class="timer">Залишилось: <span id="countdown">--:--</span></div>
+    <iframe id="formFrame" src=""></iframe>
   </div>
 
   <script>
-    const now = new Date();
-    const formatted = now.toLocaleString('uk-UA', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
-    document.getElementById('startTime').textContent = formatted;
+    const sheetURL = 'https://spreadsheets.google.com/feeds/list/YOUR_SHEET_ID/od6/public/values?alt=json';
+
+    fetch(sheetURL)
+      .then(res => res.json())
+      .then(data => {
+        const entry = data.feed.entry[0]; // перший тест
+        const title = entry.gsx$назва.$t;
+        const minutes = parseInt(entry.gsx$тривалість.$t);
+        const formURL = entry.gsx$посилання.$t;
+
+        document.getElementById('testTitle').textContent = title;
+        document.getElementById('duration').textContent = minutes;
+        document.getElementById('formFrame').src = formURL;
+
+        let remaining = minutes * 60;
+        const countdownEl = document.getElementById('countdown');
+
+        const timer = setInterval(() => {
+          remaining--;
+          const min = String(Math.floor(remaining / 60)).padStart(2, '0');
+          const sec = String(remaining % 60).padStart(2, '0');
+          countdownEl.textContent = `${min}:${sec}`;
+          if (remaining <= 0) {
+            clearInterval(timer);
+            countdownEl.textContent = "Час вичерпано";
+            countdownEl.style.color = "gray";
+          }
+        }, 1000);
+      });
   </script>
 </body>
 </html>
