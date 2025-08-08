@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>Тест з годинником</title>
+  <title>Тест без годинника</title>
   <style>
     body {
       font-family: sans-serif;
@@ -20,7 +20,12 @@
       width: 140px;
       margin-bottom: 10px;
     }
-    #clock {
+    .time-info {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    #timerDisplay {
       font-size: 28px;
       font-weight: bold;
       margin-bottom: 10px;
@@ -31,11 +36,6 @@
       display: inline-block;
       padding: 8px 16px;
       min-width: 120px;
-    }
-    .time-info {
-      font-size: 16px;
-      line-height: 1.5;
-      margin-bottom: 20px;
     }
     #scaleBar {
       width: 80%;
@@ -49,8 +49,12 @@
       width: 2px;
       background: #333;
     }
-    .tick.long { height: 15px; }
-    .tick.short { height: 8px; }
+    .tick.long {
+      height: 15px;
+    }
+    .tick.short {
+      height: 8px;
+    }
     .tick-label {
       position: absolute;
       top: 18px;
@@ -95,20 +99,47 @@
 </head>
 <body>
   <div class="overlay">
+
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------Інформація для редагування--------------------->
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
     <h2>«Львівський поліграфічний фаховий коледж УАД»</h2>
     <img src="Logo.png" alt="Фото предмету" class="subject-img">
+
     <div class="time-info">
       🗓️ <strong>Тест відкритий до:</strong> 19.07.2025, 18:54<br>
       ⏰ <strong>Прохання здати тест до:</strong> 19.07.2025, 18:00<br>
       🔒 <strong>Час початку тесту:</strong> <span id="startTime"></span>
     </div>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
 
-    <div id="clock">00:00:00</div>
+    <div id="timerDisplay">00:00</div>
+
     <div id="scaleBar"></div>
     <div id="progressBar"><div id="progress"></div></div>
     <div id="warning">⏰ Час майже вичерпано!</div>
 
-    <iframe id="testFrame" src=""></iframe>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------Шлях до тесту на Googl Forms-------------------->
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <iframe id="testFrame" src="https://docs.google.com/forms/d/e/1FAIpQLSfZlNf_d0L_jZ-cQzNFo-EsSREWD5enmFmZAvo8_gm-4uqkFg/viewform?embedded=true"></iframe>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
   </div>
 
   <script>
@@ -122,86 +153,71 @@
     }
     showStartTime();
 
-    function updateClock() {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString('uk-UA', {
-        hour: '2-digit', minute: '2-digit', second: '2-digit'
+    // Завантаження часу з time.txt
+    fetch("time.txt")
+      .then(response => response.text())
+      .then(text => {
+        const totalMinutes = parseInt(text.trim());
+        if (isNaN(totalMinutes) || totalMinutes < 1 || totalMinutes > 60) {
+          alert("❗ Невірний формат у time.txt. Має бути ціле число від 1 до 60.");
+          return;
+        }
+
+        const totalSeconds = totalMinutes * 60;
+        let remainingSeconds = totalSeconds;
+
+        function updateTimer() {
+          if (remainingSeconds <= 0) {
+            clearInterval(timerInterval);
+            alert("⛔ Час вичерпано! Надішліть форму, якщо ще не зробили це.");
+            document.getElementById("testFrame").style.display = "none";
+            document.getElementById("progress").style.width = "0%";
+            return;
+          }
+
+          const min = Math.floor(remainingSeconds / 60);
+          const sec = remainingSeconds % 60;
+          document.getElementById("timerDisplay").textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+
+          const percentRemaining = (remainingSeconds / totalSeconds) * 100;
+          document.getElementById("progress").style.width = percentRemaining + "%";
+
+          if (remainingSeconds <= 120) {
+            document.getElementById("warning").style.display = "block";
+            document.getElementById("progress").style.backgroundColor = "red";
+          } else if (remainingSeconds <= 300) {
+            document.getElementById("progress").style.backgroundColor = "orange";
+          }
+
+          remainingSeconds--;
+        }
+
+        const timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+
+        function createScaleBar() {
+          const scale = document.getElementById("scaleBar");
+          for (let m = 0; m <= totalMinutes; m++) {
+            const tick = document.createElement("div");
+            const tickType = m % 5 === 0 ? "long" : "short";
+            tick.className = `tick ${tickType}`;
+            tick.style.left = `${(m / totalMinutes) * 100}%`;
+            scale.appendChild(tick);
+
+            if (m % 5 === 0) {
+              const label = document.createElement("div");
+              label.className = "tick-label";
+              label.style.left = `${(m / totalMinutes) * 100}%`;
+              label.textContent = `${m}:00`;
+              scale.appendChild(label);
+            }
+          }
+        }
+        createScaleBar();
+      })
+      .catch(() => {
+        alert("❗ Не вдалося завантажити файл time.txt");
       });
-      document.getElementById("clock").textContent = timeStr;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    let totalMinutes = 30;
-    let totalSeconds = totalMinutes * 60;
-    let remainingSeconds = totalSeconds;
-
-    function updateTimer() {
-      if (remainingSeconds <= 0) {
-        clearInterval(timerInterval);
-        alert("⛔ Час вичерпано! Надішліть форму, якщо ще не зробили це.");
-        document.getElementById("testFrame").style.display = "none";
-        document.getElementById("progress").style.width = "0%";
-        return;
-      }
-      const percentRemaining = (remainingSeconds / totalSeconds) * 100;
-      document.getElementById("progress").style.width = percentRemaining + "%";
-
-      if (remainingSeconds <= 120) {
-        document.getElementById("warning").style.display = "block";
-        document.getElementById("progress").style.backgroundColor = "red";
-      } else if (remainingSeconds <= 300) {
-        document.getElementById("progress").style.backgroundColor = "orange";
-      }
-
-      remainingSeconds--;
-    }
-
-    function createScaleBar() {
-      const scale = document.getElementById("scaleBar");
-      scale.innerHTML = '';
-      for (let m = 0; m <= totalMinutes; m++) {
-        const tick = document.createElement("div");
-        const tickType = m % 5 === 0 ? "long" : "short";
-        tick.className = `tick ${tickType}`;
-        tick.style.left = `${(m / totalMinutes) * 100}%`;
-        scale.appendChild(tick);
-
-        if (m % 5 === 0) {
-          const label = document.createElement("div");
-          label.className = "tick-label";
-          label.style.left = `${(m / totalMinutes) * 100}%`;
-          label.textContent = `${m}:00`;
-          scale.appendChild(label);
-        }
-      }
-    }
-
-    async function initFromFiles() {
-      try {
-        const [linkRes, timeRes] = await Promise.all([
-          fetch("link.txt"),
-          fetch("Time.txt")
-        ]);
-        const testUrl = await linkRes.text();
-        const testMinutes = parseInt(await timeRes.text());
-
-        if (!isNaN(testMinutes) && testMinutes >= 1 && testMinutes <= 60) {
-          totalMinutes = testMinutes;
-          totalSeconds = totalMinutes * 60;
-          remainingSeconds = totalSeconds;
-          createScaleBar();
-          setInterval(updateTimer, 1000);
-        }
-
-        document.getElementById("testFrame").src = testUrl.trim();
-      } catch (err) {
-        alert("Помилка завантаження 'link.txt' або 'Time.txt'");
-        console.error(err);
-      }
-    }
-
-    initFromFiles();
   </script>
 </body>
 </html>
