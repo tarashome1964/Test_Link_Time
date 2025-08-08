@@ -19,15 +19,14 @@
   </div>
 
   <script>
-    const sheetURL = 'https://spreadsheets.google.com/feeds/list/YOUR_SHEET_ID/od6/public/values?alt=json';
+    const apiURL = 'https://tarashome1964.github.io/Test_Link_Time/testdata.json'; // твій API
 
-    fetch(sheetURL)
+    fetch(apiURL)
       .then(res => res.json())
       .then(data => {
-        const entry = data.feed.entry[0]; // перший тест
-        const title = entry.gsx$назва.$t;
-        const minutes = parseInt(entry.gsx$тривалість.$t);
-        const formURL = entry.gsx$посилання.$t;
+        const title = data.назва;
+        const minutes = parseInt(data.тривалість);
+        const formURL = data.форма;
 
         document.getElementById('testTitle').textContent = title;
         document.getElementById('duration').textContent = minutes;
