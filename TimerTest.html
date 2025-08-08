@@ -16,6 +16,7 @@
     Залишилось: <span id="remaining">--:--</span>
   </div>
   <button id="startBtn" style="display:none;">Почати тест</button>
+  <button id="showAnswersBtn" style="display:none;">Переглянути відповіді</button>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -44,6 +45,7 @@
           function updateTimer() {
             if (seconds <= 0) {
               remainingEl.textContent = "Час вичерпано";
+              document.getElementById('showAnswersBtn').style.display = "inline-block";
               return;
             }
             const min = Math.floor(seconds / 60);
@@ -56,6 +58,10 @@
           document.getElementById('startBtn').onclick = () => {
             document.getElementById('startBtn').disabled = true;
             updateTimer();
+          };
+
+          document.getElementById('showAnswersBtn').onclick = () => {
+            alert("Відповіді:\n" + data.questions.map(q => `• ${q.q}\n→ ${q.a}`).join("\n\n"));
           };
         })
         .catch(err => {
