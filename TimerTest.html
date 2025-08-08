@@ -4,10 +4,32 @@
   <meta charset="UTF-8">
   <title>Запуск тесту</title>
   <style>
-    body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
-    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 800px; margin: auto; }
-    .timer { font-size: 1.5em; color: #d9534f; margin-bottom: 20px; }
-    iframe { width: 100%; height: 600px; border: none; }
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 800px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .timer {
+      font-size: 1.5em;
+      color: #d9534f;
+      margin-bottom: 20px;
+    }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -19,14 +41,20 @@
   </div>
 
   <script>
-    const apiURL = 'https://tarashome1964.github.io/Test_Link_Time/testdata.json'; // твій API
+    // Отримуємо параметр id з URL
+    const params = new URLSearchParams(window.location.search);
+    const testId = params.get('id') || 'testdata'; // за замовчуванням testdata.json
+    const apiURL = `https://tarashome1964.github.io/Test_Link_Time/${testId}.json`;
 
     fetch(apiURL)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("Файл не знайдено");
+        return res.json();
+      })
       .then(data => {
-        const title = data.назва;
-        const minutes = parseInt(data.тривалість);
-        const formURL = data.форма;
+        const title = data.назва || "Без назви";
+        const minutes = parseInt(data.тривалість) || 0;
+        const formURL = data.форма || "";
 
         document.getElementById('testTitle').textContent = title;
         document.getElementById('duration').textContent = minutes;
@@ -46,6 +74,11 @@
             countdownEl.style.color = "gray";
           }
         }, 1000);
+      })
+      .catch(err => {
+        document.getElementById('testTitle').textContent = "❌ Помилка завантаження";
+        document.getElementById('countdown').textContent = "--:--";
+        console.error("Помилка:", err);
       });
   </script>
 </body>
