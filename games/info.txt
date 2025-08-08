@@ -1,1 +1,18 @@
-
+games/
+├── snake/
+│   ├── index.html
+│   ├── style.css
+│   └── script.js
+├── reversi/
+│   ├── index.html
+│   ├── reversi.js
+│   └── style.css
+├── loderunner/
+│   ├── lodeRunner.html
+│   └── assets/
+├── chess/
+│   ├── index.html
+│   └── chess.js
+├── checkers/
+│   ├── index.html
+│   └── checkers.js
