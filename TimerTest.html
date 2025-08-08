@@ -18,39 +18,46 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const testId = urlParams.get('id');
-    const jsonUrl = `${testId}.json`;
 
-    fetch(jsonUrl)
-      .then(response => {
-        if (!response.ok) throw new Error("Файл не знайдено");
-        return response.json();
-      })
-      .then(data => {
-        document.getElementById('title').textContent = data.title || "Без назви";
-        document.getElementById('duration').textContent = data.duration || "0";
+    if (!testId) {
+      document.getElementById('title').textContent = "Не вказано тест";
+      document.getElementById('duration').textContent = "0";
+      document.getElementById('remaining').textContent = "Час вичерпано";
+    } else {
+      const jsonUrl = `${testId}.json`;
 
-        let seconds = (data.duration || 0) * 60;
-        const remainingEl = document.getElementById('remaining');
+      fetch(jsonUrl)
+        .then(response => {
+          if (!response.ok) throw new Error("Файл не знайдено");
+          return response.json();
+        })
+        .then(data => {
+          document.getElementById('title').textContent = data.title || "Без назви";
+          document.getElementById('duration').textContent = data.duration || "0";
 
-        function updateTimer() {
-          if (seconds <= 0) {
-            remainingEl.textContent = "Час вичерпано";
-            return;
+          let seconds = (data.duration || 0) * 60;
+          const remainingEl = document.getElementById('remaining');
+
+          function updateTimer() {
+            if (seconds <= 0) {
+              remainingEl.textContent = "Час вичерпано";
+              return;
+            }
+            const min = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            remainingEl.textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+            seconds--;
+            setTimeout(updateTimer, 1000);
           }
-          const min = Math.floor(seconds / 60);
-          const sec = seconds % 60;
-          remainingEl.textContent = `${min}:${sec.toString().padStart(2, '0')}`;
-          seconds--;
-          setTimeout(updateTimer, 1000);
-        }
 
-        updateTimer();
-      })
-      .catch(err => {
-        document.getElementById('title').textContent = "Помилка завантаження";
-        document.getElementById('duration').textContent = "0";
-        document.getElementById('remaining').textContent = "Час вичерпано";
-      });
+          updateTimer();
+        })
+        .catch(err => {
+          document.getElementById('title').textContent = "Помилка завантаження";
+          document.getElementById('duration').textContent = "0";
+          document.getElementById('remaining').textContent = "Час вичерпано";
+        });
+    }
   </script>
 </body>
 </html>
