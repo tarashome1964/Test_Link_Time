@@ -2,36 +2,35 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>Запуск тесту</title>
+  <title>Активний тест</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
-    .test-block { margin-bottom: 20px; padding: 10px; background: #fff; border: 1px solid #ccc; }
-    .status { font-weight: bold; color: green; }
-    button { padding: 8px 12px; }
+    body { font-family: sans-serif; background: #f0f0f0; padding: 20px; }
+    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; }
+    h2 { margin-top: 0; }
+    .info { margin-bottom: 10px; }
+    .link { margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h2>🧪 Запуск тесту</h2>
+  <div class="container">
+    <h2>🧪 Активний тест: АСТРОНОМІЯ 1</h2>
 
-  <div class="test-block" id="test1">
-    <p><strong>Назва:</strong> АСТРОНОМІЯ 1</p>
-    <p><strong>Тривалість:</strong> 20 хв</p>
-    <p><strong>Статус:</strong> <span class="status">Очікує</span></p>
-    <button onclick="startTest('test1', 20)">▶️ Запустити</button>
+    <div class="info">📅 Час початку тесту: <span id="startTime"></span></div>
+    <div class="info">⏳ Тривалість: 20 хв</div>
+    <div class="info">📌 Статус: <strong>Запущено</strong></div>
+
+    <div class="link">
+      🔗 <a href="https://docs.google.com/forms/d/e/your-form-id/viewform" target="_blank">Перейти до форми тесту</a>
+    </div>
   </div>
 
   <script>
-    function startTest(id, duration) {
-      const block = document.getElementById(id);
-      const status = block.querySelector('.status');
-      status.textContent = 'Запущено';
-      status.style.color = 'orange';
-
-      setTimeout(() => {
-        status.textContent = 'Завершено';
-        status.style.color = 'gray';
-      }, duration * 60 * 1000); // хвилини → мілісекунди
-    }
+    const now = new Date();
+    const formatted = now.toLocaleString('uk-UA', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    document.getElementById('startTime').textContent = formatted;
   </script>
 </body>
 </html>
