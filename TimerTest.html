@@ -2,83 +2,54 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>Запуск тесту</title>
+  <title>Тест</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #f9f9f9;
-      padding: 20px;
-    }
-    .container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 800px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h2 {
-      margin-top: 0;
-    }
-    .timer {
-      font-size: 1.5em;
-      color: #d9534f;
-      margin-bottom: 20px;
-    }
-    iframe {
-      width: 100%;
-      height: 600px;
-      border: none;
-    }
+    body { font-family: sans-serif; padding: 20px; }
+    .timer { font-size: 1.2em; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2 id="testTitle">Завантаження...</h2>
-    <div>⏳ Тривалість: <span id="duration">--</span> хв</div>
-    <div class="timer">Залишилось: <span id="countdown">--:--</span></div>
-    <iframe id="formFrame" src=""></iframe>
+  <h1 id="title">Завантаження...</h1>
+  <div class="timer">
+    ⏳ Тривалість: <span id="duration">--</span> хв<br>
+    Залишилось: <span id="remaining">--:--</span>
   </div>
 
   <script>
-    // Отримуємо параметр id з URL
-    const params = new URLSearchParams(window.location.search);
-    const testId = params.get('id') || 'testdata'; // за замовчуванням testdata.json
-    const apiURL = `https://tarashome1964.github.io/Test_Link_Time/${testId}.json`;
+    const urlParams = new URLSearchParams(window.location.search);
+    const testId = urlParams.get('id');
+    const jsonUrl = `${testId}.json`;
 
-    fetch(apiURL)
-      .then(res => {
-        if (!res.ok) throw new Error("Файл не знайдено");
-        return res.json();
+    fetch(jsonUrl)
+      .then(response => {
+        if (!response.ok) throw new Error("Файл не знайдено");
+        return response.json();
       })
       .then(data => {
-        const title = data.назва || "Без назви";
-        const minutes = parseInt(data.тривалість) || 0;
-        const formURL = data.форма || "";
+        document.getElementById('title').textContent = data.title || "Без назви";
+        document.getElementById('duration').textContent = data.duration || "0";
 
-        document.getElementById('testTitle').textContent = title;
-        document.getElementById('duration').textContent = minutes;
-        document.getElementById('formFrame').src = formURL;
+        let seconds = (data.duration || 0) * 60;
+        const remainingEl = document.getElementById('remaining');
 
-        let remaining = minutes * 60;
-        const countdownEl = document.getElementById('countdown');
-
-        const timer = setInterval(() => {
-          remaining--;
-          const min = String(Math.floor(remaining / 60)).padStart(2, '0');
-          const sec = String(remaining % 60).padStart(2, '0');
-          countdownEl.textContent = `${min}:${sec}`;
-          if (remaining <= 0) {
-            clearInterval(timer);
-            countdownEl.textContent = "Час вичерпано";
-            countdownEl.style.color = "gray";
+        function updateTimer() {
+          if (seconds <= 0) {
+            remainingEl.textContent = "Час вичерпано";
+            return;
           }
-        }, 1000);
+          const min = Math.floor(seconds / 60);
+          const sec = seconds % 60;
+          remainingEl.textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+          seconds--;
+          setTimeout(updateTimer, 1000);
+        }
+
+        updateTimer();
       })
       .catch(err => {
-        document.getElementById('testTitle').textContent = "❌ Помилка завантаження";
-        document.getElementById('countdown').textContent = "--:--";
-        console.error("Помилка:", err);
+        document.getElementById('title').textContent = "Помилка завантаження";
+        document.getElementById('duration').textContent = "0";
+        document.getElementById('remaining').textContent = "Час вичерпано";
       });
   </script>
 </body>
