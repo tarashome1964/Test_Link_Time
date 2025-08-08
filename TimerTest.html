@@ -6,6 +6,7 @@
   <style>
     body { font-family: sans-serif; padding: 20px; }
     .timer { font-size: 1.2em; margin-top: 10px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 1em; }
   </style>
 </head>
 <body>
@@ -14,12 +15,13 @@
     ⏳ Тривалість: <span id="duration">--</span> хв<br>
     Залишилось: <span id="remaining">--:--</span>
   </div>
+  <button id="startBtn" style="display:none;">Почати тест</button>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const testId = urlParams.get('id');
 
-    if (!testId) {
+    if (!testId || testId.trim() === "") {
       document.getElementById('title').textContent = "Не вказано тест";
       document.getElementById('duration').textContent = "0";
       document.getElementById('remaining').textContent = "Час вичерпано";
@@ -34,6 +36,7 @@
         .then(data => {
           document.getElementById('title').textContent = data.title || "Без назви";
           document.getElementById('duration').textContent = data.duration || "0";
+          document.getElementById('startBtn').style.display = "inline-block";
 
           let seconds = (data.duration || 0) * 60;
           const remainingEl = document.getElementById('remaining');
@@ -50,7 +53,10 @@
             setTimeout(updateTimer, 1000);
           }
 
-          updateTimer();
+          document.getElementById('startBtn').onclick = () => {
+            document.getElementById('startBtn').disabled = true;
+            updateTimer();
+          };
         })
         .catch(err => {
           document.getElementById('title').textContent = "Помилка завантаження";
