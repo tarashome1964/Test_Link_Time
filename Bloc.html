@@ -1,1 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Test GPT</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      user-select: none; /* Блокує виділення тексту */
+    }
+    .time-info {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Інформація про тест</h1>
+  <div class="time-info">Завантаження...</div>
 
+  <script>
+    // ====== Анти-копі захист ======
+    document.addEventListener('copy', (event) => {
+      event.clipboardData.setData('text/plain', '');
+      event.preventDefault();
+      alert('Копіювання заборонено!');
+    });
+
+    document.addEventListener('cut', (event) => {
+      event.clipboardData.setData('text/plain', '');
+      event.preventDefault();
+      alert('Вирізання заборонено!');
+    });
+
+    document.addEventListener('paste', (event) => {
+      event.preventDefault();
+      alert('Вставка заборонена!');
+    });
+
+    document.addEventListener('contextmenu', (event) => event.preventDefault());
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && ['c', 'x', 'v', 'u', 's', 'p'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        alert('Ця дія заблокована!');
+      }
+    });
+
+    // Блокування PrintScreen (часткове)
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'PrintScreen') {
+        navigator.clipboard.writeText('');
+        alert('Скріншоти заборонено!');
+      }
+    });
+
+    // ====== Завантаження даних з Google Apps Script ======
+    const apiUrl = "https://script.google.com/macros/s/AKfycbw2n6IP1qKVWsM1AnwjYYzykRiNAzFe2Y1b71TdqN6I0_67iln4LuCwKjptP1DCXXfN8Q/exec";
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        document.querySelector('.time-info').innerHTML = `
+          ⏰ <strong>Тест відкритий до:</strong> ${data["Відкритий до"]} <br>
+          🕓 <strong>Здати до:</strong> ${data["Здати до"]} <br>
+          🔗 <strong><a href="${data["Посилання на тест"]}" target="_blank">Перейти до тесту</a></strong> <br>
+          ⌛ <strong>Час на виконання:</strong> ${data["Час (хв)"]} хв
+        `;
+      })
+      .catch(err => {
+        document.querySelector('.time-info').innerHTML = '❌ Помилка завантаження даних';
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
