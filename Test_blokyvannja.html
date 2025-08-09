@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Тест без годинника</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      text-align: center;
+      background: url("LPK.jpg") no-repeat center center fixed;
+      background-size: cover;
+
+      /* 🔒 Заборона виділення тексту */
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+    }
+
+    .overlay {
+      background: rgba(250, 248, 244, 0.92);
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .subject-img {
+      width: 140px;
+      margin-bottom: 10px;
+    }
+    .time-info {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    #timerDisplay {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+      background: #fff;
+      border: 2px solid #555;
+      border-radius: 10px;
+      display: inline-block;
+      padding: 8px 16px;
+      min-width: 120px;
+    }
+    #scaleBar {
+      width: 80%;
+      margin: 0 auto 10px;
+      height: 30px;
+      position: relative;
+    }
+    .tick {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      background: #333;
+    }
+    .tick.long {
+      height: 15px;
+    }
+    .tick.short {
+      height: 8px;
+    }
+    .tick-label {
+      position: absolute;
+      top: 18px;
+      font-size: 12px;
+      transform: translateX(-50%);
+    }
+    #progressBar {
+      width: 80%;
+      height: 20px;
+      background-color: red;
+      border: 2px solid #555;
+      border-radius: 10px;
+      margin: 10px auto 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    #progress {
+      height: 100%;
+      width: 100%;
+      background-color: green;
+      transition: width 1s linear, background-color 0.5s;
+    }
+    #warning {
+      color: red;
+      font-weight: bold;
+      display: none;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    iframe {
+      width: 90%;
+      max-width: 600px;
+      height: 500px;
+      border: none;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<!-- 🖱️ Блокування правої кнопки миші -->
+<body oncontextmenu="return false">
+  <div class="overlay">
+
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------Інформація для редагування--------------------->
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <h2>«Львівський поліграфічний фаховий коледж УАД»</h2>
+    <img src="Logo.png" alt="Фото предмету" class="subject-img">
+
+    <div class="time-info">
+      🗓️ <strong>Тест відкритий до:</strong> 19.07.2025, 18:54<br>
+      ⏰ <strong>Прохання здати тест до:</strong> 19.07.2025, 18:00<br>
+      🔒 <strong>Час початку тесту:</strong> <span id="startTime"></span>
+    </div>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+
+    <div id="timerDisplay">00:00</div>
+
+    <div id="scaleBar"></div>
+    <div id="progressBar"><div id="progress"></div></div>
+    <div id="warning">⏰ Час майже вичерпано!</div>
+
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------Шлях до тесту на Googl Forms-------------------->
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <iframe id="testFrame" src="https://docs.google.com/forms/d/e/1FAIpQLSfZlNf_d0L_jZ-cQzNFo-EsSREWD5enmFmZAvo8_gm-4uqkFg/viewform?embedded=true"></iframe>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+    <!------------------------------------------------------------>
+  </div>
+
+  <script>
+    function showStartTime() {
+      const now = new Date();
+      const formatted = now.toLocaleString('uk-UA', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      document.getElementById("startTime").innerText = formatted;
+    }
+    showStartTime();
+
+    // Завантаження часу з time.txt
+    fetch("time.txt")
+      .then(response => response.text())
+      .then(text => {
+        const totalMinutes = parseInt(text.trim());
+        if (isNaN(totalMinutes) || totalMinutes < 1 || totalMinutes > 60) {
+          alert("❗ Невірний формат у time.txt. Має бути ціле число від 1 до 60.");
+          return;
+        }
+
+        const totalSeconds = totalMinutes * 60;
+        let remainingSeconds = totalSeconds;
+
+        function updateTimer() {
+          if (remainingSeconds <= 0) {
+            clearInterval(timerInterval);
+            alert("⛔ Час вичерпано! Надішліть форму, якщо ще не зробили це.");
+            document.getElementById("testFrame").style.display = "none";
+            document.getElementById("progress").style.width = "0%";
+            return;
+          }
+
+          const min = Math.floor(remainingSeconds / 60);
+          const sec = remainingSeconds % 60;
+          document.getElementById("timerDisplay").textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+
+          const percentRemaining = (remainingSeconds / totalSeconds) * 100;
+          document.getElementById("progress").style.width = percentRemaining + "%";
+
+          if (remainingSeconds <= 120) {
+            document.getElementById("warning").style.display = "block";
+            document.getElementById("progress").style.backgroundColor = "red";
+          } else if (remainingSeconds <= 300) {
+            document.getElementById("progress").style.backgroundColor = "orange";
+          }
+
+          remainingSeconds--;
+        }
+
+        const timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+
+        function createScaleBar() {
+          const scale = document.getElementById("scaleBar");
+          for (let m = 0; m <= totalMinutes; m++) {
+            const tick = document.createElement("div");
+            const tickType = m % 5 === 0 ? "long" : "short";
+            tick.className = `tick ${tickType}`;
+            tick.style.left = `${(m / totalMinutes) * 100}%`;
+            scale.appendChild(tick);
+
+            if (m % 5 === 0) {
+              const label = document.createElement("div");
+              label.className = "tick-label";
+              label.style.left = `${(m / totalMinutes) * 100}%`;
+              label.textContent = `${m}:00`;
+              scale.appendChild(label);
+            }
+          }
+        }
+        createScaleBar();
+      })
+      .catch(() => {
+        alert("❗ Не вдалося завантажити файл time.txt");
+      });
+
+    // ⌨️ Блокування Ctrl+C, Ctrl+U, PrintScreen
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && ['c','u'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+      }
+      if (e.key === 'PrintScreen') {
+        e.preventDefault();
+      }
+    });
+
+    // 🎭 Підміна буфера обміну на «фігню»
+    document.addEventListener('copy', function(e) {
+      e.preventDefault();
+      e.clipboardData.setData('text/plain', 'Цей текст не можна копіювати. І взагалі — фігня!');
+    });
+  </script>
+</body>
+</html>
