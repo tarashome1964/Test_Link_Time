@@ -7,7 +7,7 @@
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
-      user-select: none; /* Блокує виділення тексту */
+      user-select: none; /* Забороняє виділення тексту */
     }
     .time-info {
       margin-top: 10px;
@@ -15,48 +15,55 @@
       color: #333;
     }
   </style>
+  <script>
+    // Блокування правого кліку
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+    // Блокування гарячих клавіш копіювання/вставки/DevTools
+    document.addEventListener('keydown', function(e) {
+      if (
+        e.ctrlKey && ['c','v','x','u','s','a','p'].includes(e.key.toLowerCase()) ||
+        e.key === "PrintScreen" ||
+        e.keyCode === 123 || // F12
+        (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase()))
+      ) {
+        e.preventDefault();
+      }
+    });
+
+    // Очищення буфера при копіюванні
+    document.addEventListener('copy', function(e) {
+      e.clipboardData.setData('text/plain', '');
+      e.preventDefault();
+    });
+
+    // Блокування вставки
+    document.addEventListener('paste', function(e) {
+      e.preventDefault();
+    });
+
+    // Спроба блокування PrintScreen (очищення буфера)
+    setInterval(function(){
+      navigator.clipboard.writeText('');
+    }, 300);
+
+    // Перевірка на DevTools
+    (function devToolsCheck() {
+      const threshold = 160;
+      setInterval(function() {
+        if (window.outerWidth - window.innerWidth > threshold || 
+            window.outerHeight - window.innerHeight > threshold) {
+          document.body.innerHTML = "<h1 style='color:red;text-align:center;'>🚫 Доступ заборонено</h1>";
+        }
+      }, 1000);
+    })();
+  </script>
 </head>
 <body>
   <h1>Інформація про тест</h1>
   <div class="time-info">Завантаження...</div>
 
   <script>
-    // ====== Анти-копі захист ======
-    document.addEventListener('copy', (event) => {
-      event.clipboardData.setData('text/plain', '');
-      event.preventDefault();
-      alert('Копіювання заборонено!');
-    });
-
-    document.addEventListener('cut', (event) => {
-      event.clipboardData.setData('text/plain', '');
-      event.preventDefault();
-      alert('Вирізання заборонено!');
-    });
-
-    document.addEventListener('paste', (event) => {
-      event.preventDefault();
-      alert('Вставка заборонена!');
-    });
-
-    document.addEventListener('contextmenu', (event) => event.preventDefault());
-
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && ['c', 'x', 'v', 'u', 's', 'p'].includes(e.key.toLowerCase())) {
-        e.preventDefault();
-        alert('Ця дія заблокована!');
-      }
-    });
-
-    // Блокування PrintScreen (часткове)
-    document.addEventListener('keyup', (e) => {
-      if (e.key === 'PrintScreen') {
-        navigator.clipboard.writeText('');
-        alert('Скріншоти заборонено!');
-      }
-    });
-
-    // ====== Завантаження даних з Google Apps Script ======
     const apiUrl = "https://script.google.com/macros/s/AKfycbw2n6IP1qKVWsM1AnwjYYzykRiNAzFe2Y1b71TdqN6I0_67iln4LuCwKjptP1DCXXfN8Q/exec";
 
     fetch(apiUrl)
